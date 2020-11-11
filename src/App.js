@@ -1,25 +1,87 @@
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
+import ResultComponent from './components/ResultComponent';
+import KeyPadComponent from './components/KeyPadComponent';
+import { connect} from "react-redux";
+import { addNumber, giveOperator, getResult, clearAll } from './redux/actions';
+//import { getRes } from './redux/getResult';
+import store from "./redux/store";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+    constructor(props){
+        super(props);
+
+        this.state = {
+            result: ""
+        }
+    }
+
+    onClick = button => {
+      //console.log(button);
+      if(button === "="){
+          this.props.getResult();
+          this.setState({
+            result: store.getState().result
+          });
+      }
+
+      else if(button === "C"){
+          this.props.clearAll();
+          this.setState({
+            result: ""
+          });
+      }
+
+      else {
+        if(isNaN(button)) {
+          let operator = 0;
+          switch(button) {
+            case "+": {
+              operator = 1
+              break;
+            }
+            case "-": {
+              operator = 2
+              break;
+            }
+            case "*": {
+              operator = 3
+              break;
+            }
+            case "/": {
+              operator = 4
+              break;
+            }
+          }
+          this.props.giveOperator(operator);
+        } else {
+          this.props.addNumber(parseInt(button, 10));
+        }
+        this.setState({
+          result: this.state.result + button
+        });
+      }
+  };
+
+  render() {
+    const container = {
+      margin: "auto",
+      width: "270px",
+    }
+      return (
+          <div>
+              <div className="calculator-body" style={container}>
+                  <h1>Simple Calculator</h1>
+                  <ResultComponent result={this.state.result}/>
+                  <KeyPadComponent onClick={this.onClick}/>
+              </div>
+          </div>
+      );
+  }
 }
 
-export default App;
+
+export default connect(
+  null,
+  { addNumber, giveOperator, getResult, clearAll }
+)(App);
